@@ -18,7 +18,7 @@ class ProductController extends Controller
             ->get('https://dummyjson.com/products/categories')->getBody(), true);
 
         // Paginate the data
-        $perPage = 10;
+        $perPage = 5;
         $currentPage = $request->input('page', 1);
 
         $apiUrl  = "https://dummyjson.com/products?skip=" . (($currentPage - 1) * $perPage) . "&limit=$perPage";
@@ -28,9 +28,8 @@ class ProductController extends Controller
         }
 
         if ($searchQuery) {
-            $apiUrl .= "&q=" . urlencode($searchQuery);
+            $apiUrl = "https://dummyjson.com/products/search/?q=" . urlencode($searchQuery);
         }
-
 
         $data = json_decode((new Client())->get($apiUrl)->getBody(), true);
 
@@ -53,9 +52,9 @@ class ProductController extends Controller
             ];
         }
 
-        $totalItems = $data['total'];
+        $totalItems = $data['total'] ?? count($processedData);
         $paginatedData = new LengthAwarePaginator($processedData, $totalItems, $perPage);
-        $paginatedData->setPath($request->url());
+        $paginatedData->setPath($request->fullUrl());
 
         return view('index', [
             'data' => $paginatedData,
